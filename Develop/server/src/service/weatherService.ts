@@ -2,12 +2,25 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // TODO: Define an interface for the Coordinates object
+interface Coordinates {
 
+}
 // TODO: Define a class for the Weather object
+class Weather {
 
+}
 // TODO: Complete the WeatherService class
 class WeatherService {
-  // TODO: Define the baseURL, API key, and city name properties
+  // Define the baseURL, API key, and city name properties
+  baseURL: string;
+  APIKey: string;
+  // cityName: string;
+
+  constructor() {
+    this.baseURL = process.env.API_BASE_URL || '';
+    this.APIKey = process.env.API_KEY || '';
+    // this.cityName = cityName;
+  }
   // TODO: Create fetchLocationData method
   // private async fetchLocationData(query: string) {}
   // TODO: Create destructureLocationData method
@@ -28,4 +41,4 @@ class WeatherService {
   // async getWeatherForCity(city: string) {}
 }
 
-export default new WeatherService();
+export default new WeatherService();//hmm no cityname??
