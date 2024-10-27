@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import fs from 'fs';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const searchHistoryPath = path.join(__dirname, '../../db/searchHistory.json');
 // Define a City class with name and id properties
 class City {
   name: string;
@@ -16,17 +21,17 @@ class City {
 class HistoryService {
   // Define a read method that reads from the searchHistory.json file
   private async read() {
-    return (await readFileSync('../../db/searchHistory.json', 'utf8'));
+    return (await readFileSync(searchHistoryPath, 'utf8'));
   }
   // Define a write method that writes the updated cities array to the searchHistory.json file
   private async write(cities: City[]) {
     //thought about putting in dist folder since it's generated, but decided on db since it's storage...
-    await fs.writeFileSync('../../db/searchHistory.json', JSON.stringify(cities));
+    await fs.writeFileSync(searchHistoryPath, JSON.stringify(cities));
   }
   // Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
   async getCities() {
     let data = JSON.parse(await this.read());
-    return data;
+    return Array.isArray(data) ? data : [];
   }
   // Define an addCity method that adds a city to the searchHistory.json file
   async addCity(city: string) {
@@ -35,9 +40,10 @@ class HistoryService {
       id: uuidv4(),
     };
     //get the current cities in array format, add the newCity, then send that to the write function. \
-    const oldCities = await this.getCities();
+    const oldCities: City[] = await this.getCities();
+
     let allCities = [...oldCities, newCity];
-    this.write(allCities); 
+    await this.write(allCities); 
   }
   // * BONUS: Define a removeCity method that removes a city from the searchHistory.json file
   async removeCity(id: string) {

@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Define route to serve index.html
 router.get('/', (_req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, '../../../client/dist/index.html'));//TODO: test this, may not work.
+    res.sendFile(path.join(__dirname, '../../../client/dist/index.html'));
 });
 
 export default router;

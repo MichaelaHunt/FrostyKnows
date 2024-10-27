@@ -3,9 +3,9 @@ dotenv.config();
 
 // Define an interface for the Coordinates object
 interface Coordinates {
-//lat and log
+//lat and lon
   lat: number;
-  log: number;
+  lon: number;
 }
 // Define a class for the Weather object
 class Weather {
@@ -34,29 +34,29 @@ class WeatherService implements Coordinates {
   baseURL: string;
   APIKey: string;
   lat: number;
-  log: number;
+  lon: number;
   city: string;
 
   constructor() {
     this.baseURL = process.env.API_BASE_URL || '';
     this.APIKey = process.env.API_KEY || '';
     this.lat = 0;
-    this.log = 0;
+    this.lon = 0;
     this.city = '';
   }
   // Create fetchLocationData method
-  private async fetchLocationData(city: string) {
+  private async fetchLocationData() {
       const response = await fetch(this.buildGeocodeQuery());
       return await response.json();
   }
   // Create destructureLocationData method
   private destructureLocationData(locationData: Coordinates): Coordinates {
-    const { lat, log } = locationData;
+    const { lat, lon } = locationData;
     this.lat = lat;
-    this.log = log;
+    this.lon = lon;
     return {
       lat: lat,
-      log: log
+      lon: lon
     };
   }
   // Create buildGeocodeQuery method
@@ -65,11 +65,11 @@ class WeatherService implements Coordinates {
   }
   // Create buildWeatherQuery method
   private buildWeatherQuery(coordinates: Coordinates): string {
-    return `${this.baseURL}/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.log}&appid=${this.APIKey}`;//so the interface is moot lol
+    return `${this.baseURL}/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${this.APIKey}`;//so the interface is moot lol
   }
   // Create fetchAndDestructureLocationData method
-  private async fetchAndDestructureLocationData() {
-    const response = await this.fetchLocationData(this.city);
+  private async fetchAndDestructureLocationData() {//this is returning only LAT
+    const response = await this.fetchLocationData();
     return this.destructureLocationData(response[0]);
   }
   // Create fetchWeatherData method
@@ -88,7 +88,7 @@ class WeatherService implements Coordinates {
     let date = new Date(response.list[0].dt * 1000);
     let tempF = (response.list[0].main.temp * 9 / 5) - 459.67;
     return new Weather(
-      response.city.name,
+      this.city,
       date.toLocaleDateString(),
       response.list[0].weather[0].icon,
       response.list[0].weather[0].description,
@@ -101,17 +101,18 @@ class WeatherService implements Coordinates {
   private buildForecastArray(currentWeather: Weather, weatherData: any[]) {
     let returnArray = [];
     returnArray.push(currentWeather);
-    for (let dayData of weatherData) {
-      let date = new Date(dayData.dt * 1000);
-      let tempF = (dayData.main.temp * 9 / 5) - 459.67;
+    for (let i = 0; i < 4; i++) {
+    //for (let dayData of weatherData) {
+      let date = new Date(weatherData[i].dt * 1000);
+      let tempF = (weatherData[i].main.temp * 9 / 5) - 459.67;
       let element = new Weather(
-        dayData.city.name,
+        this.city,
         date.toLocaleDateString(),
-        dayData.weather[0].icon,
-        dayData.weather[0].description,
+        weatherData[i].weather[0].icon,
+        weatherData[i].weather[0].description,
         tempF,
-        dayData.wind.speed,
-        dayData.main.humidity
+        weatherData[i].wind.speed,
+        weatherData[i].main.humidity
       );
       returnArray.push(element);
     }
@@ -124,10 +125,13 @@ class WeatherService implements Coordinates {
     try {
       //grab coordinates using the city name
       const coordinates = await this.fetchAndDestructureLocationData();
+      //console.log("Coordinates: " + JSON.stringify(coordinates));
       //grab the weather from the api using location data
       const weatherResponse = await this.fetchWeatherData(coordinates);
+      //console.log("WeatherResponse: " + JSON.stringify(weatherResponse));
       //get the weather obj for today
       const currentWeather = this.parseCurrentWeather(weatherResponse);
+      console.log("currentWeather: " + JSON.stringify(currentWeather));
       //get an array of weather obj for 5 days
       const forecastArray = this.buildForecastArray(currentWeather, weatherResponse.list.slice(1));
   

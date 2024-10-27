@@ -4,18 +4,25 @@ const router = Router();
 import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
-// TODO: POST Request with city name to retrieve weather data
-router.post('/', (req: Request, res: Response) => {//    /weather/
-  // TODO: GET weather data from city name
-  const { name } = req.body;//where does req.body get filled?
-  //fetch stuffs...
-//getweather for city
-  // save city to search history
-  HistoryService.addCity(name);//does this need to be awaited? 
+// POST Request with city name to retrieve weather data
+router.post('/', async (req: Request, res: Response) => {//    /weather/
+  // GET weather data from city name
+  const { cityName } = req.body;
+  //console.log("Name: " + cityName);
+    try {
+    const weatherData = await WeatherService.getWeatherForCity(cityName);
+    //console.log("Weather Data: " + JSON.stringify(weatherData));
+
+    await HistoryService.addCity(cityName); 
+    res.json(weatherData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch weather data or add city to history.' });
+  }
 });
 
 // GET search history
-router.get('/history', async (req: Request, res: Response) => {//    /weather/history
+router.get('/history', async (_req: Request, res: Response) => {//    /weather/history
   try {
     const cities = await HistoryService.getCities();
     res.json(cities);
@@ -26,8 +33,8 @@ router.get('/history', async (req: Request, res: Response) => {//    /weather/hi
 });
 
 // * BONUS TODO: DELETE city from search history
-router.delete('/history/:id', async (req: Request, res: Response) => {//    /weather/history/:id
+// router.delete('/history/:id', async (req: Request, res: Response) => {//    /weather/history/:id
 
-});
+// });
 
 export default router;
