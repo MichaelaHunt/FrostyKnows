@@ -135,7 +135,7 @@ class WeatherService implements Coordinates {
       //get an array of weather obj for 5 days
       const forecastArray = this.buildForecastArray(currentWeather, weatherResponse.list.slice(1));
   
-      return { currentWeather, forecastArray };
+      return [ currentWeather, ...forecastArray ];
     } catch (err) {
       console.error('Error getting weather for city:', err);
       throw err;
