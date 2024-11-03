@@ -108,7 +108,7 @@ class WeatherService implements Coordinates {
       let date = new Date(weatherData[i].dt * 1000);
       console.log("Date: " + date);
       let tempF: number = Number(((weatherData[i].main.temp * 9 / 5) - 459.67).toFixed(0));
-      if (date.getHours() == 13) {
+      if (date.getHours() == 12 || date.getHours() == 13 || date.getHours() == 14) {
         console.log("An item has been found - will attempt adding...");
         let element = new Weather(
           this.city,
